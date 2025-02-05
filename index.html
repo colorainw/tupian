@@ -98,5 +98,21 @@
             </div>
         </div>
     </div>
+<script>
+// 创建图片缓存
+const imageUrls = [
+  'https://www.dmoe.cc/random.php',
+  'https://image.anosu.top/pixiv',
+  'https://moe.jitsu.top/api',
+  'https://api.suyanw.cn/api/mao.php'
+];
+
+// 通过时间戳参数固定当日图片
+const timestamp = new Date().toISOString().split('T')[0]; // 生成当日日期
+
+document.querySelectorAll('.column img').forEach((img, index) => {
+  img.src = `${imageUrls[index]}?cache=${timestamp}`;
+});
+</script>
 </body>
 </html>
