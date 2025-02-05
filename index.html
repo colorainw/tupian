@@ -6,7 +6,6 @@
     <title>rainyan</title>
     <link rel="icon" href="./01.jpg" sizes="16x16">
     <style>
-        /* 原有样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -65,7 +64,6 @@
             transform: scale(1.05);
         }
 
-        /* 新增加载动画样式 */
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -86,6 +84,38 @@
             border-top: 4px solid #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+
+        /* 新增下载按钮样式 */
+        .download-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: none;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        .download-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #2c3e50;
+        }
+
+        .download-btn:hover {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .column:hover .download-btn {
+            display: flex;
         }
 
         @keyframes spin {
@@ -117,18 +147,38 @@
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://www.dmoe.cc/random.php" alt="随机图片">
+                <div class="download-btn" title="下载图片">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://image.anosu.top/pixiv" alt="二次元图片">
+                <div class="download-btn" title="下载图片">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://moe.jitsu.top/api" alt="萌系图片">
+                <div class="download-btn" title="下载图片">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://api.suyanw.cn/api/mao.php" alt="猫猫图片">
+                <div class="download-btn" title="下载图片">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
@@ -160,7 +210,7 @@
             column.classList.add('loading');
             overlay.style.display = 'flex';
             
-            // 生成新时间戳（精确到分钟）
+            // 生成新时间戳
             const timestamp = new Date().getTime();
             const newSrc = `${originalSrc}?refresh=${timestamp}`;
             
@@ -169,7 +219,6 @@
             tempImg.src = newSrc;
             
             tempImg.onload = () => {
-                // 添加淡入动画
                 imgElement.style.opacity = 0;
                 setTimeout(() => {
                     imgElement.src = newSrc;
@@ -177,7 +226,6 @@
                     column.classList.remove('loading');
                     overlay.style.display = 'none';
                     
-                    // 首次加载不记录历史
                     if (!isInitial) {
                         const state = { url: newSrc };
                         history.replaceState(state, '', window.location);
@@ -203,6 +251,41 @@
                     }
                 });
             }
+        });
+
+        // 新增下载功能
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const img = btn.previousElementSibling;
+                const column = btn.parentElement;
+                
+                try {
+                    const overlay = column.querySelector('.loading-overlay');
+                    overlay.style.display = 'flex';
+                    
+                    const originalUrl = img.src.split('?')[0];
+                    const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(originalUrl)}`);
+                    const blob = await response.blob();
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    const filename = originalUrl.split('/').pop() || `image_${Date.now()}`;
+                    a.download = filename;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } catch (error) {
+                    alert('下载失败，请稍后重试');
+                    console.error('下载错误:', error);
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>
