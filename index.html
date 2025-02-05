@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rainyan</title>
-    <link rel="icon" href="./01.jpg" sizes="16x16">
+    <title>随机图片</title>
     <style>
         * {
             margin: 0;
@@ -86,38 +85,6 @@
             animation: spin 1s linear infinite;
         }
 
-        /* 新增下载按钮样式 */
-        .download-btn {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: none;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.1);
-            z-index: 1;
-        }
-
-        .download-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: #2c3e50;
-        }
-
-        .download-btn:hover {
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .column:hover .download-btn {
-            display: flex;
-        }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -147,139 +114,30 @@
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://www.dmoe.cc/random.php" alt="随机图片">
-                <div class="download-btn" title="下载图片">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://image.anosu.top/pixiv" alt="二次元图片">
-                <div class="download-btn" title="下载图片">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://moe.jitsu.top/api" alt="萌系图片">
-                <div class="download-btn" title="下载图片">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                </div>
             </div>
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://api.suyanw.cn/api/mao.php" alt="猫猫图片">
-                <div class="download-btn" title="下载图片">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-
-        // 修改后的下载功能
-        document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const img = btn.previousElementSibling;
-                const column = btn.parentElement;
-                
-                try {
-                    const overlay = column.querySelector('.loading-overlay');
-                    overlay.style.display = 'flex';
-                    
-                    // 优先尝试从缓存直接下载
-                    let blob;
-                    try {
-                        // 方法1: 通过canvas直接获取图片数据
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        ctx.drawImage(img, 0, 0);
-                        blob = await new Promise((resolve, reject) => {
-                            canvas.toBlob((b) => {
-                                if (b) resolve(b);
-                                else reject(new Error('Canvas转换失败'));
-                            }, 'image/jpeg', 0.95);
-                        });
-                    } catch (canvasError) {
-                        console.log('Canvas方法失败，改用代理下载');
-                        // 方法2: 通过代理下载当前版本
-                        const response = await fetch(img.src);
-                        blob = await response.blob();
-                    }
-
-                    // 创建下载链接
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    
-                    // 生成文件名（保留时间戳参数）
-                    const filename = img.src.split('/').pop().split('?')[0] || `image_${Date.now()}`;
-                    a.download = filename;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                } catch (error) {
-                    alert('下载失败，请稍后重试');
-                    console.error('下载错误:', error);
-                } finally {
-                    overlay.style.display = 'none';
-                }
-            });
-        });
-
-        // 修改图片加载函数（移除时间戳参数）
-        function loadImage(imgElement, isInitial = false) {
-            const column = imgElement.parentElement;
-            const overlay = column.querySelector('.loading-overlay');
-            const originalSrc = imgElement.src.split('?')[0];
-            
-            column.classList.add('loading');
-            overlay.style.display = 'flex';
-            
-            // 使用缓存优先策略
-            const tempImg = new Image();
-            tempImg.src = originalSrc;
-            
-            tempImg.onload = () => {
-                imgElement.style.opacity = 0;
-                setTimeout(() => {
-                    imgElement.src = originalSrc;  // 保持原始URL不变
-                    imgElement.style.opacity = 1;
-                    column.classList.remove('loading');
-                    overlay.style.display = 'none';
-                }, 300);
-            };
-            
-            tempImg.onerror = () => {
-                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    column.classList.remove('loading');
-                }, 2000);
-            };
-        }
-
-        // 增强版刷新功能
         document.querySelectorAll('.column').forEach(column => {
             const img = column.querySelector('img');
             const overlay = column.querySelector('.loading-overlay');
-            
-            // 初始化加载图片
-            loadImage(img, true);
-            
+
+            // 初始化加载
+            loadImage(img);
+
             // 点击刷新
             column.addEventListener('click', () => {
                 if (!column.classList.contains('loading')) {
@@ -288,21 +146,17 @@
             });
         });
 
-        // 智能加载函数
-        function loadImage(imgElement, isInitial = false) {
+        function loadImage(imgElement) {
             const column = imgElement.parentElement;
             const overlay = column.querySelector('.loading-overlay');
             const originalSrc = imgElement.src.split('?')[0];
             
-            // 显示加载状态
             column.classList.add('loading');
             overlay.style.display = 'flex';
             
-            // 生成新时间戳
-            const timestamp = new Date().getTime();
-            const newSrc = `${originalSrc}?refresh=${timestamp}`;
+            // 强制刷新
+            const newSrc = `${originalSrc}?refresh=${Date.now()}`;
             
-            // 创建临时图片预加载
             const tempImg = new Image();
             tempImg.src = newSrc;
             
@@ -313,11 +167,6 @@
                     imgElement.style.opacity = 1;
                     column.classList.remove('loading');
                     overlay.style.display = 'none';
-                    
-                    if (!isInitial) {
-                        const state = { url: newSrc };
-                        history.replaceState(state, '', window.location);
-                    }
                 }, 300);
             };
             
@@ -329,52 +178,6 @@
                 }, 2000);
             };
         }
-
-        // 处理浏览器前进/后退
-        window.addEventListener('popstate', (event) => {
-            if (event.state?.url) {
-                document.querySelectorAll('img').forEach(img => {
-                    if (img.src === event.state.url) {
-                        loadImage(img);
-                    }
-                });
-            }
-        });
-
-        // 新增下载功能
-        document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const img = btn.previousElementSibling;
-                const column = btn.parentElement;
-                
-                try {
-                    const overlay = column.querySelector('.loading-overlay');
-                    overlay.style.display = 'flex';
-                    
-                    const originalUrl = img.src.split('?')[0];
-                    const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(originalUrl)}`);
-                    const blob = await response.blob();
-                    
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    
-                    const filename = originalUrl.split('/').pop() || `image_${Date.now()}`;
-                    a.download = filename;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                } catch (error) {
-                    alert('下载失败，请稍后重试');
-                    console.error('下载错误:', error);
-                } finally {
-                    overlay.style.display = 'none';
-                }
-            });
-        });
     </script>
 </body>
 </html>
