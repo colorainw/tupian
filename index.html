@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAINYAN!</title>
+    <title>rainyan!</title>
     <link rel="icon" href="./01.jpg" sizes="16x16">
     <style>
+        /* 原有样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -44,6 +45,7 @@
             overflow: hidden;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
+            cursor: pointer;
         }
 
         .column:hover {
@@ -61,6 +63,34 @@
 
         .column:hover img {
             transform: scale(1.05);
+        }
+
+        /* 新增加载动画样式 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -85,34 +115,95 @@
         <h1>🖼️ 随机图片</h1>
         <div class="row">
             <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://www.dmoe.cc/random.php" alt="随机图片">
             </div>
             <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://image.anosu.top/pixiv" alt="二次元图片">
             </div>
             <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://moe.jitsu.top/api" alt="萌系图片">
             </div>
             <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
                 <img src="https://api.suyanw.cn/api/mao.php" alt="猫猫图片">
             </div>
         </div>
     </div>
-<script>
-// 创建图片缓存
-const imageUrls = [
-  'https://www.dmoe.cc/random.php',
-  'https://image.anosu.top/pixiv',
-  'https://moe.jitsu.top/api',
-  'https://api.suyanw.cn/api/mao.php'
-];
 
-// 通过时间戳参数固定当日图片
-const timestamp = new Date().toISOString().split('T')[0]; // 生成当日日期
+    <script>
+        // 增强版刷新功能
+        document.querySelectorAll('.column').forEach(column => {
+            const img = column.querySelector('img');
+            const overlay = column.querySelector('.loading-overlay');
+            
+            // 初始化加载图片
+            loadImage(img, true);
+            
+            // 点击刷新
+            column.addEventListener('click', () => {
+                if (!column.classList.contains('loading')) {
+                    loadImage(img);
+                }
+            });
+        });
 
-document.querySelectorAll('.column img').forEach((img, index) => {
-  img.src = `${imageUrls[index]}?cache=${timestamp}`;
-});
-</script>
+        // 智能加载函数
+        function loadImage(imgElement, isInitial = false) {
+            const column = imgElement.parentElement;
+            const overlay = column.querySelector('.loading-overlay');
+            const originalSrc = imgElement.src.split('?')[0];
+            
+            // 显示加载状态
+            column.classList.add('loading');
+            overlay.style.display = 'flex';
+            
+            // 生成新时间戳（精确到分钟）
+            const timestamp = new Date().getTime();
+            const newSrc = `${originalSrc}?refresh=${timestamp}`;
+            
+            // 创建临时图片预加载
+            const tempImg = new Image();
+            tempImg.src = newSrc;
+            
+            tempImg.onload = () => {
+                // 添加淡入动画
+                imgElement.style.opacity = 0;
+                setTimeout(() => {
+                    imgElement.src = newSrc;
+                    imgElement.style.opacity = 1;
+                    column.classList.remove('loading');
+                    overlay.style.display = 'none';
+                    
+                    // 首次加载不记录历史
+                    if (!isInitial) {
+                        const state = { url: newSrc };
+                        history.replaceState(state, '', window.location);
+                    }
+                }, 300);
+            };
+            
+            tempImg.onerror = () => {
+                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    column.classList.remove('loading');
+                }, 2000);
+            };
+        }
+
+        // 处理浏览器前进/后退
+        window.addEventListener('popstate', (event) => {
+            if (event.state?.url) {
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.src === event.state.url) {
+                        loadImage(img);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
