@@ -3,179 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高级图片墙</title>
+    <title>rainyan</title>
     <link rel="icon" href="./01.jpg" sizes="16x16">
     <style>
-        /* 原有基础样式保持不变 */
-        /* 新增扩展样式 */
-        .context-menu {
-            position: fixed;
-            background: white;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
+        /* 原有样式保持不变 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        .context-menu-item {
-            padding: 8px 15px;
+
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin: 40px 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .column {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
             cursor: pointer;
-            transition: background 0.2s;
         }
-        
-        .context-menu-item:hover {
-            background: #f5f5f5;
+
+        .column:hover {
+            transform: translateY(-5px);
         }
-        
-        .stats-bar {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.9);
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-size: 14px;
+
+        img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            display: block;
+            transition: transform 0.3s ease;
         }
-        
-        .hotkey-hint {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.9);
-            padding: 8px 12px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+        .column:hover img {
+            transform: scale(1.05);
+        }
+
+        /* 新增加载动画样式 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 原有HTML结构保持不变 -->
-    <div class="hotkey-hint">快捷键：R - 刷新全部 | S - 保存当前</div>
-    <div class="stats-bar">已加载：<span id="loadCount">0</span> 次</div>
-    <div id="contextMenu" class="context-menu">
-        <div class="context-menu-item" data-action="save">保存图片</div>
-        <div class="context-menu-item" data-action="refresh">刷新图片</div>
-        <div class="context-menu-item" data-action="copy">复制链接</div>
+    <div class="container">
+        <h1>🖼️ 随机图片</h1>
+        <div class="row">
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://www.dmoe.cc/random.php" alt="随机图片">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://image.anosu.top/pixiv" alt="二次元图片">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://moe.jitsu.top/api" alt="萌系图片">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://api.suyanw.cn/api/mao.php" alt="猫猫图片">
+            </div>
+        </div>
     </div>
 
     <script>
-        // 状态管理对象
-        const appState = {
-            loadCount: 0,
-            currentTarget: null,
-            menuVisible: false
-        };
-
-        // 右键菜单处理
+        // 增强版刷新功能
         document.querySelectorAll('.column').forEach(column => {
-            column.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                appState.currentTarget = column.querySelector('img');
-                showContextMenu(e.clientX, e.clientY);
+            const img = column.querySelector('img');
+            const overlay = column.querySelector('.loading-overlay');
+            
+            // 初始化加载图片
+            loadImage(img, true);
+            
+            // 点击刷新
+            column.addEventListener('click', () => {
+                if (!column.classList.contains('loading')) {
+                    loadImage(img);
+                }
             });
         });
 
-        // 显示自定义右键菜单
-        function showContextMenu(x, y) {
-            const menu = document.getElementById('contextMenu');
-            menu.style.display = 'block';
-            menu.style.left = `${x}px`;
-            menu.style.top = `${y}px`;
-            appState.menuVisible = true;
-        }
-
-        // 隐藏菜单
-        document.addEventListener('click', () => {
-            if(appState.menuVisible) {
-                document.getElementById('contextMenu').style.display = 'none';
-                appState.menuVisible = false;
-            }
-        });
-
-        // 菜单功能实现
-        document.getElementById('contextMenu').addEventListener('click', (e) => {
-            const action = e.target.dataset.action;
-            if(!action) return;
-
-            switch(action) {
-                case 'save':
-                    saveImage(appState.currentTarget);
-                    break;
-                case 'refresh':
-                    loadImage(appState.currentTarget);
-                    break;
-                case 'copy':
-                    navigator.clipboard.writeText(appState.currentTarget.src);
-                    showToast('链接已复制');
-                    break;
-            }
-        });
-
-        // 图片保存功能
-        async function saveImage(img) {
-            try {
-                const response = await fetch(img.src);
-                const blob = await response.blob();
-                const link = document.createElement('a');
-                link.download = `image_${Date.now()}.jpg`;
-                link.href = URL.createObjectURL(blob);
-                link.click();
-                showToast('保存成功');
-            } catch (error) {
-                showToast('保存失败：跨域限制');
-            }
-        }
-
-        // 键盘快捷键支持
-        document.addEventListener('keydown', (e) => {
-            if(e.key === 'r' || e.key === 'R') {
-                document.querySelectorAll('.column img').forEach(img => loadImage(img));
-                showToast('正在刷新全部图片...');
-            }
-            
-            if((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                if(appState.currentTarget) saveImage(appState.currentTarget);
-            }
-        });
-
-        // 加载统计
-        function updateStats() {
-            document.getElementById('loadCount').textContent = appState.loadCount;
-        }
-
-        // 修改原有loadImage函数
+        // 智能加载函数
         function loadImage(imgElement, isInitial = false) {
-            // ...原有逻辑...
-            tempImg.onload = () => {
-                appState.loadCount++;
-                updateStats();
-                // ...后续逻辑...
-            }
-        }
-
-        // 提示信息组件
-        function showToast(message, duration=2000) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.background = '#333';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '5px';
-            document.body.appendChild(toast);
+            const column = imgElement.parentElement;
+            const overlay = column.querySelector('.loading-overlay');
+            const originalSrc = imgElement.src.split('?')[0];
             
-            setTimeout(() => {
-                toast.remove();
-            }, duration);
+            // 显示加载状态
+            column.classList.add('loading');
+            overlay.style.display = 'flex';
+            
+            // 生成新时间戳（精确到分钟）
+            const timestamp = new Date().getTime();
+            const newSrc = `${originalSrc}?refresh=${timestamp}`;
+            
+            // 创建临时图片预加载
+            const tempImg = new Image();
+            tempImg.src = newSrc;
+            
+            tempImg.onload = () => {
+                // 添加淡入动画
+                imgElement.style.opacity = 0;
+                setTimeout(() => {
+                    imgElement.src = newSrc;
+                    imgElement.style.opacity = 1;
+                    column.classList.remove('loading');
+                    overlay.style.display = 'none';
+                    
+                    // 首次加载不记录历史
+                    if (!isInitial) {
+                        const state = { url: newSrc };
+                        history.replaceState(state, '', window.location);
+                    }
+                }, 300);
+            };
+            
+            tempImg.onerror = () => {
+                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    column.classList.remove('loading');
+                }, 2000);
+            };
         }
 
-        // 初始化统计
-        updateStats();
+        // 处理浏览器前进/后退
+        window.addEventListener('popstate', (event) => {
+            if (event.state?.url) {
+                document.querySelectorAll('img').forEach(img => {
+                    if (img.src === event.state.url) {
+                        loadImage(img);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
