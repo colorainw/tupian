@@ -184,6 +184,94 @@
     </div>
 
     <script>
+
+        // 修改后的下载功能
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const img = btn.previousElementSibling;
+                const column = btn.parentElement;
+                
+                try {
+                    const overlay = column.querySelector('.loading-overlay');
+                    overlay.style.display = 'flex';
+                    
+                    // 优先尝试从缓存直接下载
+                    let blob;
+                    try {
+                        // 方法1: 通过canvas直接获取图片数据
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        blob = await new Promise((resolve, reject) => {
+                            canvas.toBlob((b) => {
+                                if (b) resolve(b);
+                                else reject(new Error('Canvas转换失败'));
+                            }, 'image/jpeg', 0.95);
+                        });
+                    } catch (canvasError) {
+                        console.log('Canvas方法失败，改用代理下载');
+                        // 方法2: 通过代理下载当前版本
+                        const response = await fetch(img.src);
+                        blob = await response.blob();
+                    }
+
+                    // 创建下载链接
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    // 生成文件名（保留时间戳参数）
+                    const filename = img.src.split('/').pop().split('?')[0] || `image_${Date.now()}`;
+                    a.download = filename;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } catch (error) {
+                    alert('下载失败，请稍后重试');
+                    console.error('下载错误:', error);
+                } finally {
+                    overlay.style.display = 'none';
+                }
+            });
+        });
+
+        // 修改图片加载函数（移除时间戳参数）
+        function loadImage(imgElement, isInitial = false) {
+            const column = imgElement.parentElement;
+            const overlay = column.querySelector('.loading-overlay');
+            const originalSrc = imgElement.src.split('?')[0];
+            
+            column.classList.add('loading');
+            overlay.style.display = 'flex';
+            
+            // 使用缓存优先策略
+            const tempImg = new Image();
+            tempImg.src = originalSrc;
+            
+            tempImg.onload = () => {
+                imgElement.style.opacity = 0;
+                setTimeout(() => {
+                    imgElement.src = originalSrc;  // 保持原始URL不变
+                    imgElement.style.opacity = 1;
+                    column.classList.remove('loading');
+                    overlay.style.display = 'none';
+                }, 300);
+            };
+            
+            tempImg.onerror = () => {
+                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    column.classList.remove('loading');
+                }, 2000);
+            };
+        }
+
         // 增强版刷新功能
         document.querySelectorAll('.column').forEach(column => {
             const img = column.querySelector('img');
