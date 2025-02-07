@@ -31,6 +31,23 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
 
+        .music-player {
+            max-width: 350px;
+            margin: 30px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: white;
+            padding: 10px;
+        }
+
+        .music-player iframe {
+            width: 100%;
+            height: 86px;
+            border: none;
+            border-radius: 8px;
+        }
+
         .row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -105,12 +122,24 @@
             h1 {
                 font-size: 2em;
             }
+            
+            .music-player {
+                width: 90%;
+                margin: 20px auto;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>随机图片</h1>
+        
+        <!-- 网易云音乐播放器 -->
+        <div class="music-player">
+            <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" 
+                    src="//music.163.com/outchain/player?type=2&id=547973258&auto=1&height=66"></iframe>
+        </div>
+
         <div class="row">
             <div class="column">
                 <div class="loading-overlay"><div class="spinner"></div></div>
