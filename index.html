@@ -231,21 +231,13 @@
 
         // 下载图片功能
         function downloadImage(imageUrl) {
-            fetch(imageUrl)
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `image_${Date.now()}.jpg`; // 设置下载文件名
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                })
-                .catch(error => {
-                    console.error('下载失败:', error);
-                });
+            // 直接使用图片的原始 URL 进行下载
+            const a = document.createElement('a');
+            a.href = imageUrl;
+            a.download = `image_${Date.now()}.jpg`; // 设置下载文件名
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         //按键监听改按钮
