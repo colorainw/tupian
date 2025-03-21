@@ -133,11 +133,11 @@
             .row {
                 grid-template-columns: 1fr;
             }
-
+            
             h1 {
                 font-size: 2em;
             }
-
+            
             .music-player {
                 width: 90%;
                 margin: 20px auto;
@@ -149,9 +149,10 @@
     <div class="container">
         <h1>随机图片</h1>
         <div class="refresh-hint">按下 R 键刷新所有图片</div>
-
+        
+        <!--网易云音乐-->
         <div class="music-player">
-            <iframe frameborder="no" border="0" marginwidth="0" marginheight="0"
+            <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" 
                     src="https://music.163.com/outchain/player?type=2&id=1488796977&auto=0&height=66"></iframe>
         </div>
 
@@ -176,6 +177,7 @@
     </div>
 
     <script>
+        //图片加载
         document.querySelectorAll('.column').forEach(column => {
             const img = column.querySelector('img');
             const overlay = column.querySelector('.loading-overlay');
@@ -187,21 +189,27 @@
                     loadImage(img);
                 }
             });
+
+            // 添加右键点击下载功能
+            column.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // 阻止默认右键菜单
+                downloadImage(img.src);
+            });
         });
 
         function loadImage(imgElement) {
             const column = imgElement.parentElement;
             const overlay = column.querySelector('.loading-overlay');
             const originalSrc = imgElement.src.split('?')[0];
-
+            
             column.classList.add('loading');
             overlay.style.display = 'flex';
-
+            
             const newSrc = `${originalSrc}?refresh=${Date.now()}`;
-
+            
             const tempImg = new Image();
             tempImg.src = newSrc;
-
+            
             tempImg.onload = () => {
                 imgElement.style.opacity = 0;
                 setTimeout(() => {
@@ -211,7 +219,7 @@
                     overlay.style.display = 'none';
                 }, 300);
             };
-
+            
             tempImg.onerror = () => {
                 overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
                 setTimeout(() => {
@@ -221,6 +229,28 @@
             };
         }
 
+        // 下载图片功能
+        function downloadImage(imageUrl) {
+            fetch(imageUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `image_${Date.now()}.jpg`; // 设置下载文件名
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('下载失败:', error);
+                });
+        }
+
+        //按键监听改按钮
+
+        //R键刷新
         document.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'r') {
                 const allImages = document.querySelectorAll('.column img');
