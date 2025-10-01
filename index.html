@@ -121,12 +121,15 @@
             }
         }
 
-        /* 🎵 音乐按钮样式 */
+     
         .music-control {
             position: fixed;
             top: 15px;
             left: 15px;
             z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         #music-btn {
@@ -147,13 +150,41 @@
             background: #2980b9;
             transform: scale(1.1);
         }
+
+        
+        #music-progress {
+            display: none; 
+            width: 200px;
+            height: 6px;
+            appearance: none;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        #music-progress::-webkit-slider-thumb {
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        #music-progress::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <!-- 🎵 音乐播放按钮 -->
     <div class="music-control">
         <button id="music-btn">▶</button>
-        <!-- 默认不加载音乐，点击时才设置 src -->
+        <input type="range" id="music-progress" value="0" min="0" max="100">
         <audio id="bg-music" preload="none" loop></audio>
     </div>
 
@@ -182,31 +213,60 @@
     </div>
 
     <script>
-        // 🎵 音乐控制逻辑
+        // 音乐
         const music = document.getElementById('bg-music');
         const musicBtn = document.getElementById('music-btn');
+        const progress = document.getElementById('music-progress');
         let musicLoaded = false;
+        let progressTimer = null;
 
         musicBtn.addEventListener('click', () => {
             if (!musicLoaded) {
-                // 第一次点击才真正加载音乐
+                // 第一次
                 music.src = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3";
                 music.volume = 0.6;
                 music.play();
                 musicLoaded = true;
                 musicBtn.textContent = "⏸";
+                progress.style.display = "block"; 
+                startProgressUpdate();
             } else {
                 if (music.paused) {
                     music.play();
                     musicBtn.textContent = "⏸";
+                    progress.style.display = "block";
+                    startProgressUpdate();
                 } else {
                     music.pause();
                     musicBtn.textContent = "▶";
+                    progress.style.display = "none"; 
+                    stopProgressUpdate();
                 }
             }
         });
 
-        // 图片加载逻辑（保持原版）
+        // 播放进度
+        function startProgressUpdate() {
+            progressTimer = setInterval(() => {
+                if (music.duration > 0) {
+                    progress.value = (music.currentTime / music.duration) * 100;
+                }
+            }, 500);
+        }
+
+        function stopProgressUpdate() {
+            clearInterval(progressTimer);
+        }
+
+        // 进度条
+        progress.addEventListener('input', () => {
+            if (music.duration > 0) {
+                const newTime = (progress.value / 100) * music.duration;
+                music.currentTime = newTime;
+            }
+        });
+
+        // 图片加载
         document.querySelectorAll('.column').forEach(column => {
             const img = column.querySelector('img');
             const overlay = column.querySelector('.loading-overlay');
@@ -219,7 +279,7 @@
                 }
             });
 
-            // 右键下载
+            // 右键
             column.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 downloadImage(img.src);
@@ -258,7 +318,7 @@
             };
         }
 
-        // 下载图片
+        // 下载
         function downloadImage(imageUrl) {
             const a = document.createElement('a');
             a.href = imageUrl;
@@ -268,7 +328,7 @@
             document.body.removeChild(a);
         }
 
-        // R键刷新
+        // R键
         document.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'r') {
                 const allImages = document.querySelectorAll('.column img');
