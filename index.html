@@ -43,7 +43,7 @@
             background: #2980b9;
         }
 
-        #progress-bar {
+        #progress-bar, #volume-bar {
             width: 200px;
             height: 5px;
             border-radius: 5px;
@@ -52,7 +52,7 @@
             cursor: pointer;
         }
 
-        #progress-bar::-webkit-slider-thumb {
+        #progress-bar::-webkit-slider-thumb, #volume-bar::-webkit-slider-thumb {
             appearance: none;
             width: 12px;
             height: 12px;
@@ -63,7 +63,7 @@
             margin-top: -4px;
         }
 
-        #progress-bar::-moz-range-thumb {
+        #progress-bar::-moz-range-thumb, #volume-bar::-moz-range-thumb {
             width: 12px;
             height: 12px;
             background: #3498db;
@@ -139,7 +139,8 @@
             object-fit: cover;
             border-radius: 15px;
             display: block;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.5s ease;
+            opacity: 0;
         }
 
         .column:hover img {
@@ -209,6 +210,7 @@
         <button id="play-pause-btn">播放音乐</button>
         <span id="current-time">00:00</span> / <span id="duration">00:00</span>
         <input type="range" id="progress-bar" value="0" min="0" max="100">
+        <input type="range" id="volume-bar" value="100" min="0" max="100">
     </div>
 
     <div class="container">
@@ -240,6 +242,7 @@
         let isPlaying = false;
         const playBtn = document.getElementById('play-pause-btn');
         const progressBar = document.getElementById('progress-bar');
+        const volumeBar = document.getElementById('volume-bar');
         const currentTimeEl = document.getElementById('current-time');
         const durationEl = document.getElementById('duration');
 
@@ -265,7 +268,6 @@
                     playBtn.textContent = '播放音乐';
                 });
             }
-
             if (isPlaying) {
                 audio.pause();
                 playBtn.textContent = '播放音乐';
@@ -279,6 +281,12 @@
         progressBar.addEventListener('input', () => {
             if (audio) {
                 audio.currentTime = progressBar.value;
+            }
+        });
+
+        volumeBar.addEventListener('input', () => {
+            if (audio) {
+                audio.volume = volumeBar.value / 100;
             }
         });
 
@@ -319,7 +327,7 @@
                     imgElement.style.opacity = 1;
                     column.classList.remove('loading');
                     overlay.style.display = 'none';
-                }, 300);
+                }, 200);
             };
 
             tempImg.onerror = () => {
