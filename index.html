@@ -1,155 +1,266 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>随机图片</title>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #f4f4f9;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .controls {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-    #musicBtn {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      background: #007bff;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #musicBtn:hover {
-      background: #0056b3;
-    }
-    #progressContainer {
-      display: none;
-      align-items: center;
-      gap: 8px;
-      width: 320px;
-    }
-    #progressBar {
-      flex: 1;
-    }
-    #currentTime, #duration {
-      min-width: 50px;
-      font-size: 14px;
-      text-align: center;
-      color: #333;
-    }
-    .image-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      width: 80%;
-      max-width: 1000px;
-    }
-    .image-container img {
-      width: 100%;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    .image-container img:hover {
-      transform: scale(1.05);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机图片 + 音乐播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin: 40px 0 10px;
+        }
+        .refresh-hint {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+        /* 音乐播放器控制 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #musicBtn {
+            padding: 8px 16px;
+            font-size: 15px;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: #fff;
+            cursor: pointer;
+        }
+        #progressContainer {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            width: 300px;
+        }
+        #progressBar {
+            flex: 1;
+        }
+        #currentTime, #duration {
+            min-width: 45px;
+            font-size: 13px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        /* 图片布局 */
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .column {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .column:hover {
+            transform: translateY(-5px);
+        }
+        .column img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 15px;
+            display: block;
+            transition: transform 0.3s ease, opacity 0.3s;
+        }
+        .column:hover img {
+            transform: scale(1.05);
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <div class="controls">
-    <button id="musicBtn">▶ 播放音乐</button>
-    <div id="progressContainer">
-      <span id="currentTime">00:00</span>
-      <input type="range" id="progressBar" value="0" min="0" step="1">
-      <span id="duration">00:00</span>
+    <div class="container">
+        <h1>随机图片</h1>
+        <div class="refresh-hint">按下 R 键刷新所有图片</div>
+
+        <!-- 音乐控制条 -->
+        <div class="controls">
+            <button id="musicBtn">▶ 播放音乐</button>
+            <div id="progressContainer">
+                <span id="currentTime">00:00</span>
+                <input type="range" id="progressBar" value="0" min="0" step="1">
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://www.dmoe.cc/random.php" alt="1">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://www.loliapi.com/acg" alt="2">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://moe.jitsu.top/api" alt="3">
+            </div>
+            <div class="column">
+                <div class="loading-overlay"><div class="spinner"></div></div>
+                <img src="https://api.miaomc.cn/image/get" alt="4">
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="image-container" id="imageContainer"></div>
 
-  <script>
-    const musicUrl = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3"
-    const musicBtn = document.getElementById("musicBtn")
-    const progressContainer = document.getElementById("progressContainer")
-    const progressBar = document.getElementById("progressBar")
-    const currentTimeSpan = document.getElementById("currentTime")
-    const durationSpan = document.getElementById("duration")
-    let audio
+    <script>
+        // 音乐播放控制
+        const musicUrl = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3";
+        const musicBtn = document.getElementById("musicBtn");
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const currentTimeSpan = document.getElementById("currentTime");
+        const durationSpan = document.getElementById("duration");
+        let audio;
 
-    function formatTime(seconds) {
-      const m = Math.floor(seconds / 60).toString().padStart(2, "0")
-      const s = Math.floor(seconds % 60).toString().padStart(2, "0")
-      return `${m}:${s}`
-    }
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+            const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+            return `${m}:${s}`;
+        }
 
-    musicBtn.addEventListener("click", () => {
-      if (!audio) {
-        audio = new Audio(musicUrl)
-        audio.addEventListener("loadedmetadata", () => {
-          progressBar.max = Math.floor(audio.duration)
-          durationSpan.textContent = formatTime(audio.duration)
-        })
-        audio.addEventListener("timeupdate", () => {
-          progressBar.value = Math.floor(audio.currentTime)
-          currentTimeSpan.textContent = formatTime(audio.currentTime)
-        })
-        progressBar.addEventListener("input", () => {
-          audio.currentTime = progressBar.value
-        })
-      }
-      if (audio.paused) {
-        audio.play()
-        musicBtn.textContent = "⏸ 暂停音乐"
-        progressContainer.style.display = "flex"
-      } else {
-        audio.pause()
-        musicBtn.textContent = "▶ 播放音乐"
-        progressContainer.style.display = "none"
-      }
-    })
+        musicBtn.addEventListener("click", () => {
+            if (!audio) {
+                audio = new Audio(musicUrl);
+                audio.addEventListener("loadedmetadata", () => {
+                    progressBar.max = Math.floor(audio.duration);
+                    durationSpan.textContent = formatTime(audio.duration);
+                });
+                audio.addEventListener("timeupdate", () => {
+                    progressBar.value = Math.floor(audio.currentTime);
+                    currentTimeSpan.textContent = formatTime(audio.currentTime);
+                });
+                progressBar.addEventListener("input", () => {
+                    audio.currentTime = progressBar.value;
+                });
+            }
+            if (audio.paused) {
+                audio.play();
+                musicBtn.textContent = "⏸ 暂停音乐";
+                progressContainer.style.display = "flex";
+            } else {
+                audio.pause();
+                musicBtn.textContent = "▶ 播放音乐";
+                progressContainer.style.display = "none";
+            }
+        });
 
-    const imageContainer = document.getElementById("imageContainer")
-    function loadImages(count = 4) {
-      imageContainer.innerHTML = ""
-      for (let i = 0; i < count; i++) {
-        const img = document.createElement("img")
-        fetch("https://www.dmoe.cc/random.php")
-          .then(res => res.blob())
-          .then(blob => {
-            const url = URL.createObjectURL(blob)
-            img.src = url
-            img.onclick = () => downloadImage(blob)
-          })
-        imageContainer.appendChild(img)
-      }
-    }
+        // 图片加载和刷新
+        document.querySelectorAll('.column').forEach(column => {
+            const img = column.querySelector('img');
+            const overlay = column.querySelector('.loading-overlay');
+            loadImage(img);
 
-    function downloadImage(blob) {
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `image_${Date.now()}.jpg`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    }
+            column.addEventListener('click', () => {
+                if (!column.classList.contains('loading')) {
+                    loadImage(img);
+                }
+            });
 
-    window.addEventListener("keydown", e => {
-      if (e.key.toLowerCase() === "r") loadImages()
-    })
+            column.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                downloadImage(img.src);
+            });
+        });
 
-    loadImages()
-  </script>
+        function loadImage(imgElement) {
+            const column = imgElement.parentElement;
+            const overlay = column.querySelector('.loading-overlay');
+            const originalSrc = imgElement.src.split('?')[0];
+
+            column.classList.add('loading');
+            overlay.style.display = 'flex';
+
+            const newSrc = `${originalSrc}?refresh=${Date.now()}`;
+            const tempImg = new Image();
+            tempImg.src = newSrc;
+
+            tempImg.onload = () => {
+                imgElement.style.opacity = 0;
+                setTimeout(() => {
+                    imgElement.src = newSrc;
+                    imgElement.style.opacity = 1;
+                    column.classList.remove('loading');
+                    overlay.style.display = 'none';
+                }, 300);
+            };
+            tempImg.onerror = () => {
+                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    column.classList.remove('loading');
+                }, 2000);
+            };
+        }
+
+        // 下载图片
+        function downloadImage(imageUrl) {
+            const a = document.createElement('a');
+            a.href = imageUrl;
+            a.download = `image_${Date.now()}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // R 键刷新全部图片
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'r') {
+                const allImages = document.querySelectorAll('.column img');
+                allImages.forEach(img => {
+                    if (!img.parentElement.classList.contains('loading')) {
+                        loadImage(img);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
