@@ -1,351 +1,155 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rainyan!</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin: 40px 0;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .refresh-hint {
-            text-align: center;
-            color: #7f8c8d;
-            margin-top: -20px;
-            margin-bottom: 25px;
-            font-size: 0.9em;
-            opacity: 0.8;
-            animation: fadeIn 1s ease-in;
-        }
-
-        .row {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .column {
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-
-        .column:hover {
-            transform: translateY(-5px);
-        }
-
-        img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            border-radius: 15px;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .column:hover img {
-            transform: scale(1.05);
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 0.8; }
-        }
-
-        @media (max-width: 768px) {
-            .row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .row {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-        }
-
-     
-        .music-control {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #music-btn {
-            width: 45px;
-            height: 45px;
-            border: none;
-            border-radius: 50%;
-            background: #3498db;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: 0.3s;
-        }
-
-        #music-btn:hover {
-            background: #2980b9;
-            transform: scale(1.1);
-        }
-
-        
-        #music-progress {
-            display: none; 
-            width: 200px;
-            height: 6px;
-            appearance: none;
-            background: #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        #music-progress::-webkit-slider-thumb {
-            appearance: none;
-            width: 10px;
-            height: 10px;
-            background: #3498db;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        #music-progress::-moz-range-thumb {
-            width: 10px;
-            height: 10px;
-            background: #3498db;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>随机图片</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #f4f4f9;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    #musicBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #musicBtn:hover {
+      background: #0056b3;
+    }
+    #progressContainer {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      width: 320px;
+    }
+    #progressBar {
+      flex: 1;
+    }
+    #currentTime, #duration {
+      min-width: 50px;
+      font-size: 14px;
+      text-align: center;
+      color: #333;
+    }
+    .image-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      width: 80%;
+      max-width: 1000px;
+    }
+    .image-container img {
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .image-container img:hover {
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
-    <div class="music-control">
-        <button id="music-btn">▶</button>
-        <input type="range" id="music-progress" value="0" min="0" max="100">
-        <audio id="bg-music" preload="none" loop></audio>
+  <div class="controls">
+    <button id="musicBtn">▶ 播放音乐</button>
+    <div id="progressContainer">
+      <span id="currentTime">00:00</span>
+      <input type="range" id="progressBar" value="0" min="0" step="1">
+      <span id="duration">00:00</span>
     </div>
+  </div>
+  <div class="image-container" id="imageContainer"></div>
 
-    <div class="container">
-        <h1>随机图片</h1>
-        <div class="refresh-hint">按下 R 键刷新所有图片 <p><a href="https://cdn1.shinyan.top">Blog备份</a> </div>
+  <script>
+    const musicUrl = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3"
+    const musicBtn = document.getElementById("musicBtn")
+    const progressContainer = document.getElementById("progressContainer")
+    const progressBar = document.getElementById("progressBar")
+    const currentTimeSpan = document.getElementById("currentTime")
+    const durationSpan = document.getElementById("duration")
+    let audio
 
-        <div class="row">
-            <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://www.dmoe.cc/random.php" alt="1">
-            </div>
-            <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://www.loliapi.com/acg" alt="2">
-            </div>
-            <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://moe.jitsu.top/api" alt="3">
-            </div>
-            <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://api.miaomc.cn/image/get" alt="4">
-            </div>
-        </div>
-    </div>
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, "0")
+      const s = Math.floor(seconds % 60).toString().padStart(2, "0")
+      return `${m}:${s}`
+    }
 
-    <script>
-        // 音乐
-        const music = document.getElementById('bg-music');
-        const musicBtn = document.getElementById('music-btn');
-        const progress = document.getElementById('music-progress');
-        let musicLoaded = false;
-        let progressTimer = null;
+    musicBtn.addEventListener("click", () => {
+      if (!audio) {
+        audio = new Audio(musicUrl)
+        audio.addEventListener("loadedmetadata", () => {
+          progressBar.max = Math.floor(audio.duration)
+          durationSpan.textContent = formatTime(audio.duration)
+        })
+        audio.addEventListener("timeupdate", () => {
+          progressBar.value = Math.floor(audio.currentTime)
+          currentTimeSpan.textContent = formatTime(audio.currentTime)
+        })
+        progressBar.addEventListener("input", () => {
+          audio.currentTime = progressBar.value
+        })
+      }
+      if (audio.paused) {
+        audio.play()
+        musicBtn.textContent = "⏸ 暂停音乐"
+        progressContainer.style.display = "flex"
+      } else {
+        audio.pause()
+        musicBtn.textContent = "▶ 播放音乐"
+        progressContainer.style.display = "none"
+      }
+    })
 
-        musicBtn.addEventListener('click', () => {
-            if (!musicLoaded) {
-                // 第一次
-                music.src = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3";
-                music.volume = 0.6;
-                music.play();
-                musicLoaded = true;
-                musicBtn.textContent = "⏸";
-                progress.style.display = "block"; 
-                startProgressUpdate();
-            } else {
-                if (music.paused) {
-                    music.play();
-                    musicBtn.textContent = "⏸";
-                    progress.style.display = "block";
-                    startProgressUpdate();
-                } else {
-                    music.pause();
-                    musicBtn.textContent = "▶";
-                    progress.style.display = "none"; 
-                    stopProgressUpdate();
-                }
-            }
-        });
+    const imageContainer = document.getElementById("imageContainer")
+    function loadImages(count = 4) {
+      imageContainer.innerHTML = ""
+      for (let i = 0; i < count; i++) {
+        const img = document.createElement("img")
+        fetch("https://www.dmoe.cc/random.php")
+          .then(res => res.blob())
+          .then(blob => {
+            const url = URL.createObjectURL(blob)
+            img.src = url
+            img.onclick = () => downloadImage(blob)
+          })
+        imageContainer.appendChild(img)
+      }
+    }
 
-        // 播放进度
-        function startProgressUpdate() {
-            progressTimer = setInterval(() => {
-                if (music.duration > 0) {
-                    progress.value = (music.currentTime / music.duration) * 100;
-                }
-            }, 500);
-        }
+    function downloadImage(blob) {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `image_${Date.now()}.jpg`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
 
-        function stopProgressUpdate() {
-            clearInterval(progressTimer);
-        }
+    window.addEventListener("keydown", e => {
+      if (e.key.toLowerCase() === "r") loadImages()
+    })
 
-        // 进度条
-        progress.addEventListener('input', () => {
-            if (music.duration > 0) {
-                const newTime = (progress.value / 100) * music.duration;
-                music.currentTime = newTime;
-            }
-        });
-
-        // 图片加载
-        document.querySelectorAll('.column').forEach(column => {
-            const img = column.querySelector('img');
-            const overlay = column.querySelector('.loading-overlay');
-
-            loadImage(img);
-
-            column.addEventListener('click', () => {
-                if (!column.classList.contains('loading')) {
-                    loadImage(img);
-                }
-            });
-
-            // 右键
-            column.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                downloadImage(img.src);
-            });
-        });
-
-        function loadImage(imgElement) {
-            const column = imgElement.parentElement;
-            const overlay = column.querySelector('.loading-overlay');
-            const originalSrc = imgElement.src.split('?')[0];
-            
-            column.classList.add('loading');
-            overlay.style.display = 'flex';
-            
-            const newSrc = `${originalSrc}?refresh=${Date.now()}`;
-            
-            const tempImg = new Image();
-            tempImg.src = newSrc;
-            
-            tempImg.onload = () => {
-                imgElement.style.opacity = 0;
-                setTimeout(() => {
-                    imgElement.src = newSrc;
-                    imgElement.style.opacity = 1;
-                    column.classList.remove('loading');
-                    overlay.style.display = 'none';
-                }, 300);
-            };
-            
-            tempImg.onerror = () => {
-                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    column.classList.remove('loading');
-                }, 2000);
-            };
-        }
-
-        // 下载
-        function downloadImage(imageUrl) {
-            const a = document.createElement('a');
-            a.href = imageUrl;
-            a.download = `image_${Date.now()}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        // R键
-        document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'r') {
-                const allImages = document.querySelectorAll('.column img');
-                const hint = document.querySelector('.refresh-hint');
-
-                allImages.forEach(img => {
-                    if (!img.parentElement.classList.contains('loading')) {
-                        loadImage(img);
-                    }
-                });
-
-                hint.style.color = '#3498db';
-                setTimeout(() => {
-                    hint.style.color = '#7f8c8d';
-                }, 200);
-            }
-        });
-    </script>
+    loadImages()
+  </script>
 </body>
 </html>
