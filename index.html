@@ -3,72 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>随机图片 + 音乐播放器</title>
+    <link rel="shortcut icon" href="web_image32.ico">
+    <title>rainyan!</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             background-color: #f0f2f5;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
+
+        .music-container {
+            text-align: center;
+            padding: 10px 20px;
+            background: #ecf0f1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        #play-pause-btn {
+            padding: 8px 16px;
+            border: none;
+            background: #3498db;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #play-pause-btn:hover {
+            background: #2980b9;
+        }
+
+        #progress-bar {
+            width: 200px;
+            height: 5px;
+            border-radius: 5px;
+            appearance: none;
+            background: #d0d0d0;
+            cursor: pointer;
+        }
+
+        #progress-bar::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            margin-top: -4px;
+        }
+
+        #progress-bar::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: #3498db;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
         .container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 0 20px;
         }
+
         h1 {
             text-align: center;
             color: #2c3e50;
-            margin: 40px 0 10px;
+            margin: 40px 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
+
         .refresh-hint {
             text-align: center;
             color: #7f8c8d;
+            margin-top: -20px;
             margin-bottom: 25px;
             font-size: 0.9em;
+            opacity: 0.8;
+            animation: fadeIn 1s ease-in;
         }
-        /* 音乐播放器控制 */
-        .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+
+        .music-player {
+            max-width: 350px;
+            margin: 30px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: white;
+            padding: 10px;
         }
-        #musicBtn {
-            padding: 8px 16px;
-            font-size: 15px;
+
+        .music-player iframe {
+            width: 100%;
+            height: 86px;
             border: none;
-            border-radius: 6px;
-            background: #3498db;
-            color: #fff;
-            cursor: pointer;
+            border-radius: 8px;
         }
-        #progressContainer {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            width: 300px;
-        }
-        #progressBar {
-            flex: 1;
-        }
-        #currentTime, #duration {
-            min-width: 45px;
-            font-size: 13px;
-            text-align: center;
-            color: #2c3e50;
-        }
-        /* 图片布局 */
+
         .row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            display: flex;
+            flex-direction: column;
             gap: 20px;
             padding: 20px;
         }
+
         .column {
             position: relative;
             border-radius: 15px;
@@ -77,58 +128,92 @@
             transition: transform 0.3s ease;
             cursor: pointer;
         }
+
         .column:hover {
             transform: translateY(-5px);
         }
-        .column img {
+
+        img {
             width: 100%;
             height: auto;
             object-fit: cover;
             border-radius: 15px;
             display: block;
-            transition: transform 0.3s ease, opacity 0.3s;
+            transition: transform 0.3s ease;
         }
+
         .column:hover img {
             transform: scale(1.05);
         }
+
         .loading-overlay {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 2;
         }
+
         .spinner {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .music-player {
+                width: 90%;
+                margin: 20px auto;
+            }
+
+            .music-container {
+                gap: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="music-container">
+        <button id="play-pause-btn">播放音乐</button>
+        <span id="current-time">00:00</span> / <span id="duration">00:00</span>
+        <input type="range" id="progress-bar" value="0" min="0" max="100">
+    </div>
+
     <div class="container">
         <h1>随机图片</h1>
-        <div class="refresh-hint">按下 R 键刷新所有图片</div>
-
-        <!-- 音乐控制条 -->
-        <div class="controls">
-            <button id="musicBtn">▶ 播放音乐</button>
-            <div id="progressContainer">
-                <span id="currentTime">00:00</span>
-                <input type="range" id="progressBar" value="0" min="0" step="1">
-                <span id="duration">00:00</span>
-            </div>
-        </div>
+        <div class="refresh-hint">按下 R 键刷新所有图片 <p><a href="https://cdn1.shinyan.top">Blog备份</a> </div>
 
         <div class="row">
             <div class="column">
@@ -151,51 +236,56 @@
     </div>
 
     <script>
-        // 音乐播放控制
-        const musicUrl = "https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3";
-        const musicBtn = document.getElementById("musicBtn");
-        const progressContainer = document.getElementById("progressContainer");
-        const progressBar = document.getElementById("progressBar");
-        const currentTimeSpan = document.getElementById("currentTime");
-        const durationSpan = document.getElementById("duration");
         let audio;
+        let isPlaying = false;
+        const playBtn = document.getElementById('play-pause-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
 
         function formatTime(seconds) {
-            const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-            const s = Math.floor(seconds % 60).toString().padStart(2, "0");
+            const m = Math.floor(seconds / 60).toString().padStart(2,'0');
+            const s = Math.floor(seconds % 60).toString().padStart(2,'0');
             return `${m}:${s}`;
         }
 
-        musicBtn.addEventListener("click", () => {
+        playBtn.addEventListener('click', () => {
             if (!audio) {
-                audio = new Audio(musicUrl);
-                audio.addEventListener("loadedmetadata", () => {
+                audio = new Audio('https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3');
+                audio.addEventListener('loadedmetadata', () => {
                     progressBar.max = Math.floor(audio.duration);
-                    durationSpan.textContent = formatTime(audio.duration);
+                    durationEl.textContent = formatTime(audio.duration);
                 });
-                audio.addEventListener("timeupdate", () => {
+                audio.addEventListener('timeupdate', () => {
                     progressBar.value = Math.floor(audio.currentTime);
-                    currentTimeSpan.textContent = formatTime(audio.currentTime);
+                    currentTimeEl.textContent = formatTime(audio.currentTime);
                 });
-                progressBar.addEventListener("input", () => {
-                    audio.currentTime = progressBar.value;
+                audio.addEventListener('ended', () => {
+                    isPlaying = false;
+                    playBtn.textContent = '播放音乐';
                 });
             }
-            if (audio.paused) {
-                audio.play();
-                musicBtn.textContent = "⏸ 暂停音乐";
-                progressContainer.style.display = "flex";
-            } else {
+
+            if (isPlaying) {
                 audio.pause();
-                musicBtn.textContent = "▶ 播放音乐";
-                progressContainer.style.display = "none";
+                playBtn.textContent = '播放音乐';
+            } else {
+                audio.play();
+                playBtn.textContent = '暂停音乐';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        progressBar.addEventListener('input', () => {
+            if (audio) {
+                audio.currentTime = progressBar.value;
             }
         });
 
-        // 图片加载和刷新
         document.querySelectorAll('.column').forEach(column => {
             const img = column.querySelector('img');
             const overlay = column.querySelector('.loading-overlay');
+
             loadImage(img);
 
             column.addEventListener('click', () => {
@@ -231,6 +321,7 @@
                     overlay.style.display = 'none';
                 }, 300);
             };
+
             tempImg.onerror = () => {
                 overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
                 setTimeout(() => {
@@ -240,7 +331,6 @@
             };
         }
 
-        // 下载图片
         function downloadImage(imageUrl) {
             const a = document.createElement('a');
             a.href = imageUrl;
@@ -250,15 +340,21 @@
             document.body.removeChild(a);
         }
 
-        // R 键刷新全部图片
         document.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'r') {
                 const allImages = document.querySelectorAll('.column img');
+                const hint = document.querySelector('.refresh-hint');
+
                 allImages.forEach(img => {
                     if (!img.parentElement.classList.contains('loading')) {
                         loadImage(img);
                     }
                 });
+
+                hint.style.color = '#3498db';
+                setTimeout(() => {
+                    hint.style.color = '#7f8c8d';
+                }, 200);
             }
         });
     </script>
