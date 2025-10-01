@@ -41,23 +41,6 @@
             animation: fadeIn 1s ease-in;
         }
 
-        .music-player {
-            max-width: 350px;
-            margin: 30px auto;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            background: white;
-            padding: 10px;
-        }
-
-        .music-player iframe {
-            width: 100%;
-            height: 86px;
-            border: none;
-            border-radius: 8px;
-        }
-
         .row {
             display: flex;
             flex-direction: column;
@@ -72,6 +55,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
             cursor: pointer;
+            background: #e0e0e0; /* 占位背景色 */
         }
 
         .column:hover {
@@ -84,38 +68,14 @@
             object-fit: cover;
             border-radius: 15px;
             display: block;
-            transition: transform 0.3s ease;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.6s ease, transform 0.6s ease;
         }
 
-        .column:hover img {
-            transform: scale(1.05);
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        img.loaded {
+            opacity: 1;
+            transform: scale(1);
         }
 
         @keyframes fadeIn {
@@ -137,117 +97,115 @@
             h1 {
                 font-size: 2em;
             }
-            
-            .music-player {
-                width: 90%;
-                margin: 20px auto;
-            }
+        }
+
+        /* 🎵 音乐控制按钮样式 */
+        .music-control {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+        }
+
+        #music-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+
+        #music-btn:hover {
+            background: #2980b9;
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body>
+    <!-- 🎵 音乐播放控制 -->
+    <div class="music-control">
+        <button id="music-btn">⏸</button>
+        <audio id="bg-music" src="https://acg-1305857515.cos.ap-beijing.myqcloud.com/Music.mp3" autoplay loop></audio>
+    </div>
+
     <div class="container">
         <h1>随机图片</h1>
-        <div class="refresh-hint">按下 R 键刷新所有图片 <p><a href="https://cdn1.shinyan.top">Blog备份</a> </div>
+        <div class="refresh-hint">按下 R 键刷新所有图片 <p><a href="https://cdn1.shinyan.top">Blog备份</a></div>
 
         <div class="row">
             <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://www.dmoe.cc/random.php" alt="1">
+                <img data-src="https://www.dmoe.cc/random.php" alt="1">
             </div>
             <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://www.loliapi.com/acg" alt="2">
+                <img data-src="https://www.loliapi.com/acg" alt="2">
             </div>
             <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://moe.jitsu.top/api" alt="3">
+                <img data-src="https://moe.jitsu.top/api" alt="3">
             </div>
             <div class="column">
-                <div class="loading-overlay"><div class="spinner"></div></div>
-                <img src="https://api.miaomc.cn/image/get" alt="4">
+                <img data-src="https://api.miaomc.cn/image/get" alt="4">
             </div>
         </div>
     </div>
 
     <script>
-        //图片加载
-        document.querySelectorAll('.column').forEach(column => {
-            const img = column.querySelector('img');
-            const overlay = column.querySelector('.loading-overlay');
+        // 🎵 音乐播放控制逻辑
+        const music = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
 
-            loadImage(img);
-
-            column.addEventListener('click', () => {
-                if (!column.classList.contains('loading')) {
-                    loadImage(img);
-                }
-            });
-
-            // 添加右键点击下载功能
-            column.addEventListener('contextmenu', (e) => {
-                e.preventDefault(); // 阻止默认右键菜单
-                downloadImage(img.src);
-            });
+        music.volume = 0.6;
+        music.play().catch(() => {
+            console.log("浏览器阻止了自动播放，需要用户点击按钮。");
         });
 
-        function loadImage(imgElement) {
-            const column = imgElement.parentElement;
-            const overlay = column.querySelector('.loading-overlay');
-            const originalSrc = imgElement.src.split('?')[0];
-            
-            column.classList.add('loading');
-            overlay.style.display = 'flex';
-            
-            const newSrc = `${originalSrc}?refresh=${Date.now()}`;
-            
-            const tempImg = new Image();
-            tempImg.src = newSrc;
-            
-            tempImg.onload = () => {
-                imgElement.style.opacity = 0;
-                setTimeout(() => {
-                    imgElement.src = newSrc;
-                    imgElement.style.opacity = 1;
-                    column.classList.remove('loading');
-                    overlay.style.display = 'none';
-                }, 300);
-            };
-            
-            tempImg.onerror = () => {
-                overlay.innerHTML = '<span style="color:#e74c3c">加载失败</span>';
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    column.classList.remove('loading');
-                }, 2000);
-            };
-        }
+        musicBtn.addEventListener('click', () => {
+            if (music.paused) {
+                music.play();
+                musicBtn.textContent = "⏸";
+            } else {
+                music.pause();
+                musicBtn.textContent = "▶";
+            }
+        });
 
-        // 下载图片功能
-        function downloadImage(imageUrl) {
-            // 直接使用图片的原始 URL 进行下载
-            const a = document.createElement('a');
-            a.href = imageUrl;
-            a.download = `image_${Date.now()}.jpg`; // 设置下载文件名
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+        // 🔄 懒加载逻辑
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.getAttribute('data-src') + "?refresh=" + Date.now();
 
-        //按键监听改按钮
+                    img.src = src;
+                    img.onload = () => img.classList.add('loaded');
+                    img.onerror = () => {
+                        img.src = "fallback.jpg"; // 可替换成你自己的占位图
+                        img.classList.add('loaded');
+                    };
 
-        //R键刷新
+                    obs.unobserve(img);
+                }
+            });
+        }, { rootMargin: "50px" });
+
+        lazyImages.forEach(img => observer.observe(img));
+
+        // R键刷新所有图片
         document.addEventListener('keydown', (e) => {
             if (e.key.toLowerCase() === 'r') {
-                const allImages = document.querySelectorAll('.column img');
-                const hint = document.querySelector('.refresh-hint');
-
-                allImages.forEach(img => {
-                    if (!img.parentElement.classList.contains('loading')) {
-                        loadImage(img);
+                lazyImages.forEach(img => {
+                    if (img.classList.contains('loaded')) {
+                        img.src = img.getAttribute('data-src') + "?refresh=" + Date.now();
                     }
                 });
 
+                const hint = document.querySelector('.refresh-hint');
                 hint.style.color = '#3498db';
                 setTimeout(() => {
                     hint.style.color = '#7f8c8d';
